@@ -11,3 +11,7 @@ export default class Gate {
     canvas.text(this.name, this.pos.x, this.pos.y);
   }
 }
+
+export const AND = new Gate("AND");
+export const OR = new Gate("OR");
+export const NOT = new Gate("NOT");
