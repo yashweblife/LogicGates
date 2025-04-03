@@ -6,15 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + TS</title>
     <style>
+      * {
+        padding:0;
+        margin:0;
+        box-sizing: border-box;
+      }
+      #app{
+        display: flex;
+      }
       canvas{
-        border:1px solid black;
+        padding:0;
+        margin: 0;
+      }
+
+      body{
+        background-color: rgb(32,32,32);
       }
     </style>
   </head>
   <body>
     <div id="app">
-      <nav id="buttons"></nav>
-      <div id="canvas"></div>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
