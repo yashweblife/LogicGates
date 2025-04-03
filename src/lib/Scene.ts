@@ -1,4 +1,4 @@
-import { Gate, Wire, Input, Output, mouse, Canvas } from ".";
+import { Canvas, Gate, Input, Output, Wire, keyboard, mouse } from ".";
 
 export default class Scene {
   background: string = "rgb(52,52,52)";
@@ -27,7 +27,7 @@ export default class Scene {
       return 1;
     }
     if (
-      mouse.pos.x > window.innerWidth - this.offset * 2 &&
+      mouse.pos.x > window.innerWidth - this.offset &&
       mouse.pos.y > this.offset &&
       mouse.pos.y < window.innerHeight - this.offset
     ) {
@@ -45,18 +45,16 @@ export default class Scene {
   isfMouseOnTopOfInputs() {
     if (this.inputs.length == 0) return false; // if no input exists
     for (let i = 0; i < this.inputs.length; i++) {
-      // check if the mouse is on top of any input return index
       if (this.inputs[i].isMouseOnTop()) {
         return i;
       }
     }
     return false;
   }
-  isMouseOnTopOfOutputs() {
+  isMouseOnTopOfOutputs(canvas: Canvas) {
     if (this.outputs.length == 0) return false; // if no input exists
     for (let i = 0; i < this.outputs.length; i++) {
-      // check if the mouse is on top of any input return index
-      if (this.outputs[i].isMouseOnTop()) {
+      if (this.outputs[i].isMouseOnTop(canvas)) {
         return i;
       }
     }
@@ -82,7 +80,7 @@ export default class Scene {
       if (!!!index && mouse.click) {
         setTimeout(() => {
           this.inputs.push(new Input(x, y));
-        }, 1);
+        }, 2);
       } else if (typeof index === "number" && index && mouse.click) {
         setTimeout(() => {
           this.inputs[index].toggle();
@@ -106,14 +104,11 @@ export default class Scene {
       canvas.fillArc(x, y, 25, "rgb(72,72,72)");
       canvas.fillArc(x, y, 20, "rgb(62,62,62)");
       canvas.fillArc(x - 25 - 15, y, 10, "rgb(72,72,72)");
-      const index = this.isMouseOnTopOfOutputs();
+      const index = this.isMouseOnTopOfOutputs(canvas);
       if (!!!index && mouse.click) {
         setTimeout(() => {
           this.outputs.push(new Output(x, y));
-        }, 1);
-      } else if (typeof index === "number" && index && mouse.click) {
-        setTimeout(() => {
-          this.outputs[index].toggle();
+          console.log("ADD", this.outputs);
         }, 1);
       }
     }
@@ -143,32 +138,53 @@ export default class Scene {
     }
     return false;
   }
-  startWire(startNode: Input) {
+  isGateNodeClicked() {
+    return false;
+  }
+
+  startWire(startNode: Input | Output | Gate) {
     this.mode = "wire";
     const wire = new Wire(startNode);
     this.wires.push(wire);
+    console.log("STARTED WIRE", this.wires);
     return wire;
   }
   layAWire(canvas: Canvas) {
-    if (!this.currentWire) return;
-    const outputNodeClicked = this.isOutputNodeClicked();
-    if (this.currentWire.links.length < 2) {
-      console.log("LINKING");
-      if (mouse.click) {
-        if (outputNodeClicked) {
-          this.currentWire.child = this.outputs[outputNodeClicked];
-          this.endWire();
-        } else {
-          this.currentWire.links.push(mouse.pos);
-          console.log(this.currentWire.links);
-        }
+    if (this.mode !== "wire") return false;
+    if (keyboard.key == "Escape") {
+      this.wires = this.wires.filter((wire) => wire !== this.currentWire);
+      console.log("ENDED WIRE", this.wires);
+      this.endWire();
+    }
+    if (this.currentWire && this.currentWire.child === null) {
+      const outputNodeClicked = this.isOutputNodeClicked();
+      const gateNodeClicked = this.isGateNodeClicked();
+      if (outputNodeClicked) {
+        console.log("outputNodeClicked", outputNodeClicked);
+        this.currentWire.links.push(this.outputs[outputNodeClicked].nodePos);
+        this.currentWire.child = this.outputs[outputNodeClicked];
+        this.endWire();
+      } else if (gateNodeClicked) {
+        console.log("gateNodeClicked", gateNodeClicked);
+      }
+    } else if (this.currentWire && this.currentWire.parent === null) {
+      const inputNodeClicked = this.isInputNodeClicked();
+      const gateNodeClicked = this.isGateNodeClicked();
+      if (inputNodeClicked) {
+        this.currentWire.links.push(this.inputs[inputNodeClicked].nodePos);
+        this.currentWire.parent = this.inputs[inputNodeClicked];
+        this.endWire();
+      } else if (gateNodeClicked) {
+        console.log("gateNodeClicked", gateNodeClicked);
       }
     }
+    this.currentWire?.create();
   }
   endWire() {
     this.mode = "none";
+    this.currentWire = null;
   }
-  draw(canvas: Canvas) {
+  _drawBG(canvas: Canvas) {
     canvas.fillRect(
       this.offset,
       this.offset,
@@ -176,21 +192,56 @@ export default class Scene {
       canvas.dom.height - this.offset * 2,
       this.background,
     );
-    const location = this.mouseLocation();
-    this.drawAndHandleLeftPanel(location, canvas);
-    this.drawAndHandleRightPanel(location, canvas);
-    this.drawAndHandleMainPanel(location, canvas);
+  }
+  _drawComponents(canvas: Canvas) {
     this.gates.length > 0 && this.gates.forEach((gate) => gate.draw(canvas));
     this.inputs.length > 0 &&
       this.inputs.forEach((input) => input.draw(canvas));
     this.outputs.length > 0 &&
       this.outputs.forEach((output) => output.draw(canvas));
     this.wires.length > 0 && this.wires.forEach((wire) => wire.draw(canvas));
+  }
+  _handleNoneMode() {
     const inputNodeClicked = this.isInputNodeClicked();
-
+    const outputNodeClicked = this.isOutputNodeClicked();
     if (inputNodeClicked) {
+      console.log("inputNodeClicked", inputNodeClicked);
       this.mode = "wire";
       this.currentWire = this.startWire(this.inputs[inputNodeClicked]);
+      return inputNodeClicked;
+    }
+    if (outputNodeClicked) {
+      console.log("outputNodeClicked", outputNodeClicked);
+      this.mode = "wire";
+      this.currentWire = this.startWire(this.outputs[outputNodeClicked]);
+      return outputNodeClicked;
+    }
+    return false;
+  }
+  _handleWireMode(canvas: Canvas) {
+    if (this.mode != "wire") return false;
+    const handler = this.layAWire(canvas);
+    return handler;
+  }
+  _handleGateMode() {}
+  draw(canvas: Canvas) {
+    this._drawBG(canvas);
+
+    const location = this.mouseLocation();
+    this.drawAndHandleLeftPanel(location, canvas);
+    this.drawAndHandleRightPanel(location, canvas);
+    this.drawAndHandleMainPanel(location, canvas);
+    this._drawComponents(canvas);
+
+    const inputNodeClicked = this.isInputNodeClicked();
+    const outputNodeClicked = this.isOutputNodeClicked();
+    if (this.mode != "wire" && inputNodeClicked) {
+      this.mode = "wire";
+      this.currentWire = this.startWire(this.inputs[inputNodeClicked]);
+    }
+    if (this.mode != "wire" && outputNodeClicked) {
+      this.mode = "wire";
+      this.currentWire = this.startWire(this.outputs[outputNodeClicked]);
     }
     if (this.mode == "wire" && this.currentWire) {
       this.layAWire(canvas);
