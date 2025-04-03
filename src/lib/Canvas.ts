@@ -1,14 +1,23 @@
 export default class Canvas {
   public dom: HTMLCanvasElement = document.createElement("canvas");
   public ctx: CanvasRenderingContext2D = this.dom.getContext("2d")!;
+  public lineWidth: number = 10;
   constructor(parent: HTMLElement = document.body) {
     parent.appendChild(this.dom);
     this.dom.width = window.innerWidth;
     this.dom.height = window.innerHeight;
+    this.ctx.lineWidth = this.lineWidth;
+    this.ctx.lineCap = "round";
   }
   public setSize(x: number, y: number) {
     this.dom.width = x;
     this.dom.height = y;
+  }
+  get w() {
+    return this.dom.width;
+  }
+  get h() {
+    return this.dom.height;
   }
   public clear() {
     this.ctx.clearRect(0, 0, this.dom.width, this.dom.height);
