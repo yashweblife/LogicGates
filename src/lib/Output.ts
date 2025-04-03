@@ -1,4 +1,4 @@
-import { mouse, Canvas } from ".";
+import { Canvas, mouse } from ".";
 
 export default class Output {
   state: boolean = false;
@@ -10,10 +10,10 @@ export default class Output {
   get nodePos() {
     return { x: this.pos.x - 25 - 15, y: this.pos.y };
   }
-  isMouseOnTop() {
+  isMouseOnTop(canvas: Canvas) {
     if (
-      mouse.pos.x > this.pos.x - 25 - 15 &&
-      mouse.pos.x < this.pos.x + 25 + 15 &&
+      mouse.pos.x > canvas.w - 25 - 15 &&
+      mouse.pos.x < canvas.w &&
       mouse.pos.y > this.pos.y - 25 - 15 &&
       mouse.pos.y < this.pos.y + 25 + 15
     ) {
@@ -42,7 +42,7 @@ export default class Output {
   }
   draw(canvas: Canvas) {
     const stateColor = this.state ? "rgb(255,0,0)" : "rgb(10,10,10)";
-    const mouseOverButtonColor = this.isMouseOnTop()
+    const mouseOverButtonColor = this.isMouseOnTop(canvas)
       ? "rgb(42,42,42)"
       : "rgb(22,22,22)";
     canvas.line(
