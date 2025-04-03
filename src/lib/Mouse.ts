@@ -16,10 +16,10 @@ export class Mouse {
       this.click = false;
     });
     window.addEventListener("click", (e: MouseEvent) => {
+      if (this.click == true) return;
       this.click = true;
       this.pos.x = e.clientX;
       this.pos.y = e.clientY;
-      console.log(this.pos);
       setTimeout(() => (this.click = false), 2);
     });
     window.addEventListener("contextmenu", (e: MouseEvent) => {
