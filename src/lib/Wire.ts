@@ -1,16 +1,27 @@
-import { Canvas, mouse } from "./";
+import { Canvas, Gate, Input, mouse, Output } from "./";
 
 export default class Wire {
   links: { x: number; y: number }[] = [];
   parent: any;
   child: any = null;
   state = false;
-  constructor(parent: any) {
-    this.parent = parent;
-    this.links.push(parent.nodePos);
+  constructor(master: Input | Output | Gate) {
+    if (master instanceof Input) {
+      this.parent = master;
+    } else if (master instanceof Output) {
+      this.child = master;
+    } else if (master instanceof Gate) {
+      this.parent = master;
+    }
+    this.links.push(master.pos);
+  }
+  create() {
+    if (mouse.click) {
+      this.links.push({ x: mouse.pos.x, y: mouse.pos.y });
+    }
   }
   get isFullyAttached() {
-    if (this.child === null) return false;
+    if (this.parent === null || this.child === null) return false;
     return true;
   }
   draw(canvas: Canvas) {
