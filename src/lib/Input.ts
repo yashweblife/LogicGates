@@ -1,4 +1,4 @@
-import { mouse, Canvas } from ".";
+import { Canvas, mouse } from ".";
 
 export default class Input {
   state: boolean = false;
@@ -13,7 +13,7 @@ export default class Input {
   isMouseOnTop() {
     if (
       mouse.pos.x > this.pos.x - 25 - 15 &&
-      mouse.pos.x < this.pos.x + 25 + 15 &&
+      mouse.pos.x < this.pos.x + 25 &&
       mouse.pos.y > this.pos.y - 25 - 15 &&
       mouse.pos.y < this.pos.y + 25 + 15
     ) {
