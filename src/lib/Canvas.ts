@@ -76,6 +76,9 @@ export default class Canvas {
     this.ctx.lineTo(x2, y2);
     this.ctx.stroke();
   }
+  public strokeColor(color: string) {
+    this.ctx.strokeStyle = color;
+  }
   public startLine(x: number, y: number) {
     this.ctx.beginPath();
     this.ctx.moveTo(x, y);
