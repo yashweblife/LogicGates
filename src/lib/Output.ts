@@ -61,6 +61,21 @@ export default class Output {
       this.isMouseOnTopOfNode ? "rgb(72,72,72)" : stateColor,
     );
   }
+  static drawShadow(canvas: Canvas, offset: number) {
+    canvas.fillRect(
+      canvas.dom.width - offset,
+      offset,
+      offset - 2,
+      canvas.dom.height - offset * 2,
+      "rgb(62,62,62)",
+    );
+    let x = canvas.dom.width - offset / 2;
+    let y = mouse.pos.y;
+    canvas.line(x, y, x - 25 - 15, y, "rgb(72,72,72)");
+    canvas.fillArc(x, y, 25, "rgb(72,72,72)");
+    canvas.fillArc(x, y, 20, "rgb(62,62,62)");
+    canvas.fillArc(x - 25 - 15, y, 10, "rgb(72,72,72)");
+  }
   toggle() {
     this.state = !this.state;
   }
