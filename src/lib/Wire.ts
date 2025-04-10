@@ -45,12 +45,19 @@ export default class Wire {
         );
       }
     } else {
+      if(this.parent){
+        this.state = this.parent.state;
+        if(this.child){
+          this.child.state = this.parent.state;
+        }
+      }
       for (let i = 0; i < this.links.length - 1; i++) {
         canvas.line(
           this.links[i].x,
           this.links[i].y,
           this.links[i + 1].x,
           this.links[i + 1].y,
+          this.state ? "rgb(255,0,0)" : "rgb(10,10,10)"
         );
       }
     }
